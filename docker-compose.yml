@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  mysql-database:
+    container_name: mysql-database
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql-data:/var/lib/mysql
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge

@@ -8,15 +8,13 @@ import (
 	"github/go-rest-api-clean-architecture/service"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type UserHandler struct {
 	userService service.UserService
 }
 
-func NewUserHandler(db *gorm.DB) *UserHandler {
-	userService := service.NewUserService(db)
+func NewUserHandler(userService service.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 

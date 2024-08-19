@@ -6,6 +6,8 @@ import (
 
 	"github/go-rest-api-clean-architecture/handler"
 	"github/go-rest-api-clean-architecture/model"
+	"github/go-rest-api-clean-architecture/repository"
+	"github/go-rest-api-clean-architecture/service"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -14,11 +16,13 @@ import (
 
 const (
 	PORT = 8080
-	DSN  = "root:root@tcp(127.0.0.1:3306)/simplize_dev?charset=utf8mb4&parseTime=True&loc=Local"
+	DSN  = "root:root@tcp(localhost:3306)/simplize_dev?charset=utf8mb4&parseTime=True&loc=Local"
 )
 
 func main() {
 	r := gin.Default()
+	// gin.SetMode("release")
+
 	db, err := gorm.Open(mysql.Open(DSN), &gorm.Config{})
 	if err != nil {
 		log.Fatalln(err.Error())
@@ -28,7 +32,9 @@ func main() {
 	db.AutoMigrate(&model.User{})
 
 	// Initialize repositories, services, and handlers
-	userHandler := handler.NewUserHandler(db)
+	userRepository := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepository)
+	userHandler := handler.NewUserHandler(userService)
 
 	// Define routes
 	r.POST("/api/v1/users", userHandler.CreateUser)

@@ -5,8 +5,6 @@ import (
 
 	"github/go-rest-api-clean-architecture/model"
 	"github/go-rest-api-clean-architecture/repository"
-
-	"gorm.io/gorm"
 )
 
 type UserService interface {
@@ -21,8 +19,7 @@ type userService struct {
 	userRepository repository.UserRepository
 }
 
-func NewUserService(db *gorm.DB) UserService {
-	userRepository := repository.NewUserRepository(db)
+func NewUserService(userRepository repository.UserRepository) UserService {
 	return &userService{userRepository: userRepository}
 }
 
