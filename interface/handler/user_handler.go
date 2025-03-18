@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github/go-rest-api-clean-architecture/model"
-	"github/go-rest-api-clean-architecture/service"
+	"github/go-rest-api-clean-architecture/application/service"
+	"github/go-rest-api-clean-architecture/domain/model"
 
 	"github.com/gin-gonic/gin"
 )

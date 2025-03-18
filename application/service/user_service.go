@@ -3,8 +3,8 @@ package service
 import (
 	"time"
 
-	"github/go-rest-api-clean-architecture/model"
-	"github/go-rest-api-clean-architecture/repository"
+	"github/go-rest-api-clean-architecture/domain/model"
+	"github/go-rest-api-clean-architecture/domain/repository"
 )
 
 type UserService interface {

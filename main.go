@@ -2,37 +2,24 @@ package main
 
 import (
 	"fmt"
-	"log"
 
-	"github/go-rest-api-clean-architecture/handler"
-	"github/go-rest-api-clean-architecture/model"
-	"github/go-rest-api-clean-architecture/repository"
-	"github/go-rest-api-clean-architecture/service"
+	"github/go-rest-api-clean-architecture/application/service"
+	"github/go-rest-api-clean-architecture/domain/repository"
+	"github/go-rest-api-clean-architecture/infrastructure"
+	"github/go-rest-api-clean-architecture/interface/handler"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-)
-
-const (
-	PORT = 8080
-	DSN  = "root:root@tcp(localhost:3306)/simplize_dev?charset=utf8mb4&parseTime=True&loc=Local"
 )
 
 func main() {
 	r := gin.Default()
 	// gin.SetMode("release")
 
-	db, err := gorm.Open(mysql.Open(DSN), &gorm.Config{})
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-
-	// Auto Migrate
-	db.AutoMigrate(&model.User{})
+	db := infrastructure.InitSqlite()
+	rdb := infrastructure.NewRedisClient()
 
 	// Initialize repositories, services, and handlers
-	userRepository := repository.NewUserRepository(db)
+	userRepository := repository.NewUserRepository(db, rdb)
 	userService := service.NewUserService(userRepository)
 	userHandler := handler.NewUserHandler(userService)
 
@@ -44,5 +31,5 @@ func main() {
 	r.DELETE("/api/v1/users/:id", userHandler.DeleteUser)
 
 	// Run the server
-	r.Run(fmt.Sprintf(":%d", PORT))
+	r.Run(fmt.Sprintf(":%d", 8080))
 }
