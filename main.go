@@ -13,7 +13,7 @@ import (
 
 func main() {
 	r := gin.Default()
-	// gin.SetMode("release")
+	gin.SetMode("release")
 
 	db := infrastructure.InitSqlite()
 	rdb := infrastructure.NewRedisClient()

@@ -1,12 +1,15 @@
 package infrastructure
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type RedisClient struct {
@@ -24,6 +27,14 @@ func NewRedisClient() *RedisClient {
 		Client: client,
 		Ctx:    context.Background(),
 	}
+}
+
+func (r *RedisClient) Exists(key string) (bool, error) {
+	result, err := r.Client.Exists(r.Ctx, key).Result()
+	if err != nil {
+		return false, err
+	}
+	return result > 0, nil
 }
 
 func (r *RedisClient) Set(key string, value string, expiration time.Duration) error {
@@ -81,3 +92,60 @@ func (r *RedisClient) InvalidPrefix(prefix string) error {
 	}
 	return nil
 }
+
+// external package
+func (r *RedisClient) SetMsgPack(key string, data interface{}, expiration time.Duration) error {
+	msgData, err := msgpack.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return r.Client.Set(r.Ctx, key, msgData, expiration).Err()
+}
+
+// external package
+func (r *RedisClient) GetMsgPack(key string, dest interface{}) error {
+	value, err := r.Client.Get(r.Ctx, key).Bytes()
+	if err == redis.Nil {
+		return nil
+	} else if err != nil {
+		return err
+	}
+	return msgpack.Unmarshal(value, dest)
+}
+
+// Only for golang
+func (r *RedisClient) SetGob(key string, data interface{}, expiration time.Duration) error {
+	var buffer bytes.Buffer
+	enc := gob.NewEncoder(&buffer)
+	if err := enc.Encode(data); err != nil {
+		return err
+	}
+	return r.Client.Set(r.Ctx, key, buffer.Bytes(), expiration).Err()
+}
+
+// Only for golang
+func (r *RedisClient) GetGob(key string, dest interface{}) error {
+	value, err := r.Client.Get(r.Ctx, key).Bytes()
+	if err == redis.Nil {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	buffer := bytes.NewBuffer(value)
+	dec := gob.NewDecoder(buffer)
+	return dec.Decode(dest)
+}
+
+/*
+JSON: 24MB (100.000 records)
+MessagePack: 14MB (100.000 records)
+Gob (Go-native): 10MB (100.000 records)
+
+Which One Should You Use?
+Format	Pros	Cons	Use Case
+JSON	Human-readable, easy debugging	Larger size, slower	General usage
+MessagePack	Small size, fast serialization	Needs external package	API caching, fast processing
+Gob	Go-native, very efficient for structs	Not cross-language compatible	Internal Go-only data
+🚀 Recommendation: Use MessagePack for speed and efficiency. If you only work within Go, Gob is a great alternative.
+*/

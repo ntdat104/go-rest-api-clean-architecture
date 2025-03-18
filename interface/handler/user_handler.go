@@ -46,7 +46,7 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
 		"message": "Success",
-		"data":    users,
+		"data":    *users,
 		"total":   total,
 	})
 }

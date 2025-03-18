@@ -18,7 +18,7 @@ func InitSqlite() *gorm.DB {
 	}
 	db.AutoMigrate(&model.User{})
 	now := time.Now()
-	for i := range make([]struct{}, 10) {
+	for i := range make([]struct{}, 100000) {
 		fullname := fmt.Sprintf("user_%d", i+1)
 		email := fmt.Sprintf("user_%d@gmail.com", i+1)
 		phoneNumber := fmt.Sprintf("098765%04d", i+1) // Example phone format
